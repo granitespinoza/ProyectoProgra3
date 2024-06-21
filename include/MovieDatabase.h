@@ -16,6 +16,10 @@ struct Movie {
 };
 
 class MovieDatabase {
+private:
+    std::unordered_map<std::string, Movie> movies;
+    std::vector<Movie> watchLater;
+    std::vector<Movie> likedMovies;
 public:
     void loadFromCSV(const std::string& filename);
     std::vector<Movie> searchByTitle(const std::string& query);
@@ -24,11 +28,6 @@ public:
     std::vector<Movie> getRecommendedMovies();
     void addToWatchLater(const Movie& movie);
     void likeMovie(const Movie& movie);
-
-private:
-    std::unordered_map<std::string, Movie> movies;
-    std::vector<Movie> watchLater;
-    std::vector<Movie> likedMovies;
 };
 
 
