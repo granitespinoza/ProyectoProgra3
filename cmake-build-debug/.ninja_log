@@ -1,0 +1,7 @@
+# ninja log v5
+3	6811	7406347392234872	CMakeFiles/prueba_2_proyecto_p3.dir/main.cpp.obj	a8f9ad69ef5ceb97
+6815	7573	7406347395564892	prueba_2_proyecto_p3.exe	f275544224fa208a
+11	1346	7406360039196961	CMakeFiles/prueba_2_proyecto_p3.dir/src/utils.cpp.obj	febdd88c3e6a579f
+5	1379	7406360039546959	CMakeFiles/prueba_2_proyecto_p3.dir/src/MovieDatabase.cpp.obj	60fb56cab8fa3aa3
+0	7478	7406360100488305	CMakeFiles/prueba_2_proyecto_p3.dir/src/main.cpp.obj	6cfa9a20a0025398
+7489	8224	7406360103378316	prueba_2_proyecto_p3.exe	e52b0634e755893c
