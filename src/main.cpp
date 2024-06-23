@@ -136,6 +136,22 @@ int main() {
                 return crow::response(x);
             });
 
+    CROW_ROUTE(app, "/recommended_by_title")
+            .methods("GET"_method)([&db](){
+                auto movies = db.getRecommendedMovies_by_title();
+                crow::json::wvalue x;
+                for (size_t i = 0; i < movies.size(); ++i) {
+                    const auto& movie = movies[i];
+                    crow::json::wvalue movie_json;
+                    movie_json["id"] = movie.imdb_id;
+                    movie_json["title"] = movie.title;
+                    movie_json["tags"] = movie.tags;
+                    movie_json["synopsis"] = movie.plot_synopsis;
+                    x["movies"][i] = std::move(movie_json);
+                }
+                return crow::response(x);
+            });
+
     CROW_ROUTE(app,"/get_movies_liked")
             .methods("GET"_method)([&db](){
                 auto movies = db.getLikedMovies();
@@ -150,6 +166,37 @@ int main() {
                     x["movies"][i] = std::move(movie_json);
                 }
                 return crow::response(x);
+            });
+
+
+    CROW_ROUTE(app,"/remove_watchlater")
+            .methods("POST"_method)([&db](const crow::request& req){
+                auto body = crow::json::load(req.body);
+                if (!body) {
+                    return crow::response(400, "Invalid JSON");
+                }
+                std::string id = body["id_movie"].s();
+                auto movie = db.getMovieById(id);
+                if (movie.imdb_id.empty()) {
+                    return crow::response(404, "Movie not found");
+                }
+                db.removeWatchLater(id); // Assuming exact match
+                return crow::response(200);
+            });
+
+    CROW_ROUTE(app,"/remove_liked")
+            .methods("POST"_method)([&db](const crow::request& req){
+                auto body = crow::json::load(req.body);
+                if (!body) {
+                    return crow::response(400, "Invalid JSON");
+                }
+                std::string id = body["id_movie"].s();
+                auto movie = db.getMovieById(id);
+                if (movie.imdb_id.empty()) {
+                    return crow::response(404, "Movie not found");
+                }
+                db.removeLikedMovie(id); // Assuming exact match
+                return crow::response(200);
             });
 
     app.port(18080).multithreaded().run(); // Ejecutar la aplicación en el puerto 18080

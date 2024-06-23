@@ -91,6 +91,7 @@ const Movies = () => {
                 <label className="mr-2">Tamaño de página: </label>
                 <select value={pageSize} onChange={handlePageSizeChange} className="border-2 border-gray-200 rounded h-10 ">
                     <option value={10}>10</option>
+                    <option value={15}>15</option>
                     <option value={20}>20</option>
                 </select>
             </div>

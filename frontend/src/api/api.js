@@ -47,3 +47,22 @@ export const get_movies_recommendations_tag = async () => {
     const res = await axios.get(`${BAKEND_URL}/recommended_by_tag`);
     return res.data.movies;
 }
+
+export const get_movies_recommendations_tittle = async () => {
+    const res = await axios.get(`${BAKEND_URL}/recommended_by_title`);
+    return res.data.movies;
+}
+
+export const remove_watch_later = async (id) => {
+    const res = await axios.post(`${BAKEND_URL}/remove_watchlater`, {
+        id_movie: id
+    });
+    return res.data;
+}
+
+export const remove_liked_movie = async (id) => {
+    const res = await axios.post(`${BAKEND_URL}/remove_liked`, {
+        id_movie: id
+    });
+    return res.data;
+}

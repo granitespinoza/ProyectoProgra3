@@ -15,20 +15,25 @@ void MovieDatabase::loadFromCSV(const std::string& filename) {
 
     removeQuotes(groupedData);
 
-    for (const auto& group : groupedData) {
-        if (group.size() == 6) {
-            Movie movie;
-            movie.imdb_id = group[0];
-            movie.title = group[1];
-            movie.plot_synopsis = group[2];
-            movie.tags = group[3];
-            movie.split = group[4];
-            movie.synopsis_source = group[5];
-            movies[movie.imdb_id] = movie;
-        } else {
-            std::cerr << "Línea con formato incorrecto." << std::endl;
+    for (int i = 0; i < groupedData.size(); ++i) {
+    const auto& group = groupedData[i];
+    if (group.size() == 6) {
+        Movie movie;
+        movie.imdb_id = group[0];
+        movie.title = group[1];
+        movie.plot_synopsis = group[2];
+        movie.tags = group[3];
+        movie.split = group[4];
+        movie.synopsis_source = group[5];
+        movies[movie.imdb_id] = movie;
+    } else {
+        std::cerr << "Línea " << i+1 << " con formato incorrecto: ";
+        for (const auto& element : group) {
+            std::cerr << element << " ";
         }
+        std::cerr << std::endl;
     }
+}
 
     std::cout << "Se cargaron " << movies.size() << " películas desde el archivo CSV." << std::endl;
 }
@@ -161,11 +166,27 @@ std::vector<Movie> MovieDatabase::getRecommendedMovies_by_tag() {
 }
 
 void MovieDatabase::addToWatchLater(const std::string& id) {
-    watchLater.push_back(movies[id]);
+    // Verifica si la película ya está en watchLater
+    auto it = std::find_if(watchLater.begin(), watchLater.end(), [&id](const Movie& movie) {
+        return movie.imdb_id == id;
+    });
+
+    // Si la película no está en watchLater, la agrega
+    if (it == watchLater.end()) {
+        watchLater.push_back(movies[id]);
+    }
 }
 
 void MovieDatabase::likeMovie(const std::string& id) {
-    likedMovies.push_back(movies[id]);
+    // Verifica si la película ya está en likedMovies
+    auto it = std::find_if(likedMovies.begin(), likedMovies.end(), [&id](const Movie& movie) {
+        return movie.imdb_id == id;
+    });
+
+    // Si la película no está en likedMovies, la agrega
+    if (it == likedMovies.end()) {
+        likedMovies.push_back(movies[id]);
+    }
 }
 
 Movie MovieDatabase::getMovieById(const std::string& imdb_id) {
@@ -174,4 +195,65 @@ Movie MovieDatabase::getMovieById(const std::string& imdb_id) {
 
 std::vector<Movie> MovieDatabase::getLikedMovies() {
     return likedMovies;
+}
+
+std::vector<Movie> MovieDatabase::getRecommendedMovies_by_title() {
+    if (likedMovies.empty()) {
+        // Si likedMovies está vacío, devuelve 10 películas aleatorias
+        return getRandomMovies();
+    } else {
+        // Crea un mapa para almacenar cada palabra y su recuento
+        std::unordered_map<std::string, int> wordCount;
+
+        // Recorre todas las películas en likedMovies
+        for (const auto& movie : likedMovies) {
+            // Divide el título en palabras
+            std::vector<std::string> words = splitString(movie.title, " ");
+
+            // Filtra las palabras que tienen menos de 4 caracteres y actualiza el recuento en el mapa
+            for (const auto& word : words) {
+                if (word.length() >= 4) {
+                    ++wordCount[word];
+                }
+            }
+        }
+
+        // Encuentra la palabra con el recuento más alto en el mapa
+        std::string mostFrequentWord;
+        int maxCount = 0;
+        for (const auto& pair : wordCount) {
+            if (pair.second > maxCount) {
+                maxCount = pair.second;
+                mostFrequentWord = pair.first;
+            }
+        }
+
+        // Si todos los recuentos son iguales, toma la primera palabra del contenedor del mapa
+        if (maxCount == 1) {
+            mostFrequentWord = wordCount.begin()->first;
+        }
+
+        // Realiza una búsqueda por título con la palabra más frecuente
+        std::vector<Movie> searchResults = searchByTitle(mostFrequentWord);
+
+        // Si hay más de 10 resultados, reduce el vector a los primeros 10
+        if (searchResults.size() > 10) {
+            searchResults.resize(10);
+        }
+
+        return searchResults;
+    }
+}
+
+void MovieDatabase::removeWatchLater(const std::string &id) {
+    watchLater.erase(std::remove_if(watchLater.begin(), watchLater.end(), [id](const Movie& movie) {
+        return movie.imdb_id == id;
+    }), watchLater.end());
+
+}
+
+void MovieDatabase::removeLikedMovie(const std::string &id) {
+    likedMovies.erase(std::remove_if(likedMovies.begin(), likedMovies.end(), [id](const Movie& movie) {
+        return movie.imdb_id == id;
+    }), likedMovies.end());
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { get_favorites } from "../api/api.js";
+import {remove_liked_movie} from "../api/api.js";
 
 const Favoritos = () => {
     const [favorites, setFavorites] = useState([]);
@@ -10,6 +11,7 @@ const Favoritos = () => {
             try {
                 const movies = await get_favorites();
                 setFavorites(movies);
+                console.log(movies);
             } catch (error) {
                 console.error(error);
             }
@@ -21,6 +23,18 @@ const Favoritos = () => {
     const toggleSynopsis = (index) => {
         setShowFullSynopsis(prevState => ({...prevState, [index]: !prevState[index]}));
     }
+
+    const handleRemove = async (movie) => {
+    try {
+        const response = await remove_liked_movie(movie.id);
+        console.log(response); // Log the response for debugging
+        // Remove the movie from the state
+        setFavorites(favorites.filter(m => m.id !== movie.id));
+    } catch (error) {
+        console.error(error);
+    }
+
+}
 
     return (
         <div className="flex flex-col items-start mt-16 ml-2">
@@ -39,6 +53,11 @@ const Favoritos = () => {
                             {showFullSynopsis[index] ? 'Ver menos' : 'Ver más'}
                         </button>
                     </p>
+                    <div className="flex mt-2">
+                        <button onClick={() => handleRemove(movie)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
+                            Eliminar de favoritos
+                        </button>
+                    </div>
                 </div>
             ))}
         </div>

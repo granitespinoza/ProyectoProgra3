@@ -43,8 +43,10 @@ std::vector<std::vector<std::string>> groupData(const std::vector<std::string>& 
 void removeQuotes(std::vector<std::vector<std::string>>& data) {
     for (size_t i = 0; i < data.size(); ++i) {
         for (size_t j = 0; j < data[i].size(); ++j) {
+
             if (i >= 1 && j == 0) {
                 data[i][j] = data[i][j].substr(2, data[i][j].length() - 3);
+                data[i][j].erase(std::remove(data[i][j].begin(), data[i][j].end(), '"'), data[i][j].end());
             } else if (j == data[i].size() - 1) {
                 data[i][j] = data[i][j].substr(1, data[i][j].length() - 1);
             } else {

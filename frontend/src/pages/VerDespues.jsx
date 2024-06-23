@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { get_watch_later } from "../api/api.js";
+import { remove_watch_later} from "../api/api.js";
 
 const VerDespues = () => {
     const [watchLaterMovies, setWatchLaterMovies] = useState([]);
     const [showFullSynopsis, setShowFullSynopsis] = useState({});
+
+
 
     useEffect(() => {
         const fetchWatchLaterMovies = async () => {
@@ -21,6 +24,18 @@ const VerDespues = () => {
     const toggleSynopsis = (index) => {
         setShowFullSynopsis(prevState => ({...prevState, [index]: !prevState[index]}));
     }
+    const handleRemove = async (movie) => {
+    try {
+        const response = await remove_watch_later(movie.id);
+        console.log(response); // Log the response for debugging
+        // Remove the movie from the state
+        setWatchLaterMovies(watchLaterMovies.filter(m => m.id !== movie.id));
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
 
     return (
         <div className="flex flex-col items-start mt-16 ml-2">
@@ -39,6 +54,11 @@ const VerDespues = () => {
                             {showFullSynopsis[index] ? 'Ver menos' : 'Ver más'}
                         </button>
                     </p>
+                    <div className="flex mt-2">
+                        <button onClick={() => handleRemove(movie)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
+                            Eliminar de Ver Despues
+                        </button>
+                    </div>
                 </div>
             ))}
         </div>

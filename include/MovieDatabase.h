@@ -35,12 +35,15 @@ public:
     std::vector<Movie> searchByTag(const std::string& tag);
     std::vector<Movie> getMoviesToWatchLater();
     std::vector<Movie> getRecommendedMovies_by_tag();
+    std::vector<Movie> getRecommendedMovies_by_title();
     void addToWatchLater(const std::string& id);
     void likeMovie(const std::string& id);
     std::vector<Movie> getRandomMovies();
     std::string getRandomTag(std::string tags);
     std::vector<Movie> getLikedMovies();
     Movie getMovieById(const std::string& imdb_id);
+    void removeWatchLater(const std::string& id);
+    void removeLikedMovie(const std::string& id);
 };
 
 
