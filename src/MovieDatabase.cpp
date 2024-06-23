@@ -1,29 +1,54 @@
 #include "../include/MovieDatabase.h"
 #include "../include/utils.h"
-#include <fstream>
-#include <sstream>
 #include <iostream>
+#include <vector>
 
 void MovieDatabase::loadFromCSV(const std::string& filename) {
-    std::ifstream file(filename);
-    std::string line;
+    std::string csvData = readCSVToString(filename);
 
-    // Saltar la primera línea si contiene encabezados
-    std::getline(file, line);
+    std::string delimiter = "¬";
+    std::vector<std::string> fields = splitString(csvData, delimiter);
 
-    while (std::getline(file, line)) {
-        std::istringstream ss(line);
-        std::string title, synopsis, tag;
+    std::vector<std::vector<std::string>> groupedData = groupData(fields, 6);
 
-        std::getline(ss, title, ',');
-        std::getline(ss, synopsis, ',');
-        std::getline(ss, tag, ',');
+    removeQuotes(groupedData);
 
-        Movie movie = {title, synopsis, tag};
-        movies[title] = movie;
+    for (const auto& group : groupedData) {
+        if (group.size() == 6) {
+            Movie movie;
+            movie.imdb_id = group[0];
+            movie.title = group[1];
+            movie.plot_synopsis = group[2];
+            movie.tags = group[3];
+            movie.split = group[4];
+            movie.synopsis_source = group[5];
+            movies[movie.imdb_id] = movie;
+        } else {
+            std::cerr << "Línea con formato incorrecto." << std::endl;
+        }
     }
 
-    std::cout << "Loaded " << movies.size() << " movies from CSV file." << std::endl;
+    std::cout << "Se cargaron " << movies.size() << " películas desde el archivo CSV." << std::endl;
+}
+
+std::vector<Movie> MovieDatabase::getMoviesByPage(int page, int pageSize) {
+    std::vector<Movie> pageMovies;
+    if (page < 1 || pageSize < 1 || (page - 1) * pageSize >= movies.size()) {
+        return pageMovies; // Retorna un vector vacío si los parámetros de la página son inválidos
+    }
+
+    // Calcular el inicio y el final de la página
+    size_t start = (page - 1) * pageSize;
+    size_t end = std::min(movies.size(), start + pageSize);
+
+    // Copiar las películas de la página al vector pageMovies
+    auto it = movies.begin();
+    std::advance(it, start);
+    for (size_t i = start; i < end; ++i, ++it) {
+        pageMovies.push_back(it->second);
+    }
+
+    return pageMovies;
 }
 
 std::vector<Movie> MovieDatabase::searchByTitle(const std::string& query) {
@@ -39,7 +64,7 @@ std::vector<Movie> MovieDatabase::searchByTitle(const std::string& query) {
 std::vector<Movie> MovieDatabase::searchByTag(const std::string& tag) {
     std::vector<Movie> results;
     for (const auto& pair : movies) {
-        if (pair.second.tag == tag) {
+        if (pair.second.tags.find(tag) != std::string::npos) {
             results.push_back(pair.second);
         }
     }
@@ -51,8 +76,7 @@ std::vector<Movie> MovieDatabase::getMoviesToWatchLater() {
 }
 
 std::vector<Movie> MovieDatabase::getRecommendedMovies() {
-    // Implement your own recommendation algorithm
-    return likedMovies; // Simple example: return liked movies
+    return likedMovies;
 }
 
 void MovieDatabase::addToWatchLater(const Movie& movie) {

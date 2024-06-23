@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
-std::vector<std::string> split(const std::string& str, char delimiter);
-
+std::string readCSVToString(const std::string& filename);
+std::vector<std::string> splitString(const std::string& str, const std::string& delimiter);
+std::vector<std::vector<std::string>> groupData(const std::vector<std::string>& data, size_t groupSize);
+void removeQuotes(std::vector<std::vector<std::string>>& data);
 
 #endif //MYCPPRESTPROJECT_UTILS_H
