@@ -2,6 +2,8 @@
 #include "../include/utils.h"
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <random>
 
 void MovieDatabase::loadFromCSV(const std::string& filename) {
     std::string csvData = readCSVToString(filename);
@@ -53,8 +55,14 @@ std::vector<Movie> MovieDatabase::getMoviesByPage(int page, int pageSize) {
 
 std::vector<Movie> MovieDatabase::searchByTitle(const std::string& query) {
     std::vector<Movie> results;
+    std::string lowerQuery = query;
+    std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), ::tolower);
+
     for (const auto& pair : movies) {
-        if (pair.second.title.find(query) != std::string::npos) {
+        std::string lowerTitle = pair.second.title;
+        std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+
+        if (lowerTitle.find(lowerQuery) != std::string::npos) {
             results.push_back(pair.second);
         }
     }
@@ -75,14 +83,95 @@ std::vector<Movie> MovieDatabase::getMoviesToWatchLater() {
     return watchLater;
 }
 
-std::vector<Movie> MovieDatabase::getRecommendedMovies() {
+std::vector<Movie> MovieDatabase::getRandomMovies() {
+    std::vector<Movie> randomMovies;
+    std::vector<std::string> keys;
+    keys.reserve(movies.size());
+    for (const auto& pair : movies) {
+        keys.push_back(pair.first);
+    }
+
+    for (int i = 0; i < 10; ++i) {
+        int randomIndex = rand() % keys.size();
+        randomMovies.push_back(movies[keys[randomIndex]]);
+        keys.erase(keys.begin() + randomIndex);
+    }
+
+    return randomMovies;
+}
+
+std::string MovieDatabase::getRandomTag(std::string tags) {
+    std::vector<std::string> tagList = splitString(tags, ",");
+    int randomIndex = rand() % tagList.size();
+    return tagList[randomIndex];
+}
+
+
+
+std::vector<Movie> MovieDatabase::getRecommendedMovies_by_tag() {
+    if (likedMovies.empty()) {
+        // Si likedMovies está vacío, devuelve 10 películas aleatorias
+        return getRandomMovies();
+    }
+    else if (likedMovies.size() == 1) {
+        // Si likedMovies tiene solo una película, realiza una búsqueda por título con el título de la película
+        std::string tag =getRandomTag(likedMovies[0].tags);
+        std::vector<Movie> searchResults = searchByTag(tag);
+        searchResults.resize(10);
+        return searchResults;
+    }
+    else {
+        // Crea un mapa para almacenar cada etiqueta y su recuento
+        std::unordered_map<std::string, int> tagCount;
+
+        // Recorre todas las películas en likedMovies
+        for (const auto& movie : likedMovies) {
+            // Divide las etiquetas y actualiza el recuento en el mapa
+            std::vector<std::string> tags = splitString(movie.tags, ",");
+            for (const auto& tag : tags) {
+                ++tagCount[tag];
+            }
+        }
+
+        // Encuentra la etiqueta con el recuento más alto en el mapa
+        std::string mostFrequentTag;
+        int maxCount = 0;
+        for (const auto& pair : tagCount) {
+            if (pair.second > maxCount) {
+                maxCount = pair.second;
+                mostFrequentTag = pair.first;
+            }
+        }
+
+        // Si todos los recuentos son iguales, toma la primera etiqueta del contenedor del mapa
+        if (maxCount == 1) {
+            mostFrequentTag = tagCount.begin()->first;
+        }
+
+        // Realiza una búsqueda por etiqueta con la etiqueta más frecuente
+        std::vector<Movie> searchResults = searchByTag(mostFrequentTag);
+
+        // Si hay más de 10 resultados, reduce el vector a los primeros 10
+        if (searchResults.size() > 10) {
+            searchResults.resize(10);
+        }
+
+        return searchResults;
+    }
+}
+
+void MovieDatabase::addToWatchLater(const std::string& id) {
+    watchLater.push_back(movies[id]);
+}
+
+void MovieDatabase::likeMovie(const std::string& id) {
+    likedMovies.push_back(movies[id]);
+}
+
+Movie MovieDatabase::getMovieById(const std::string& imdb_id) {
+    return movies[imdb_id];
+}
+
+std::vector<Movie> MovieDatabase::getLikedMovies() {
     return likedMovies;
-}
-
-void MovieDatabase::addToWatchLater(const Movie& movie) {
-    watchLater.push_back(movie);
-}
-
-void MovieDatabase::likeMovie(const Movie& movie) {
-    likedMovies.push_back(movie);
 }

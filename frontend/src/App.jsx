@@ -5,7 +5,7 @@ import './App.css'
 import NavBar from "./pages/NavBar.jsx";
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom'
 import Favoritos from "./pages/Favoritos.jsx";
-import {VerDespues} from "./pages/VerDespues.jsx";
+import VerDespues from "./pages/VerDespues.jsx";
 import Movies from "./pages/Movies.jsx";
 
 function App() {

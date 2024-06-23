@@ -22,12 +22,15 @@ int main() {
     MovieDatabase db;
     db.loadFromCSV("../data/movies.csv");
 
-    CROW_ROUTE(app, "/")([&db](){
+    CROW_ROUTE(app, "/get_WatchLater")
+        .methods("GET"_method)([&db](){
         auto movies = db.getMoviesToWatchLater();
         crow::json::wvalue x;
         for (size_t i = 0; i < movies.size(); ++i) {
             const auto& movie = movies[i];
             crow::json::wvalue movie_json;
+            movie_json["id"] = movie.imdb_id;
+            movie_json["tags"]= movie.tags;
             movie_json["title"] = movie.title;
             movie_json["synopsis"] = movie.plot_synopsis;
             x["movies"][i] = std::move(movie_json);
@@ -61,6 +64,8 @@ int main() {
                 for (size_t i = 0; i < results.size(); ++i) {
                     const auto& movie = results[i];
                     crow::json::wvalue movie_json;
+
+                    movie_json["id"] = movie.imdb_id;
                     movie_json["title"] = movie.title;
                     movie_json["tags"] = movie.tags;
                     movie_json["synopsis"] = movie.plot_synopsis;
@@ -76,6 +81,7 @@ int main() {
         for (size_t i = 0; i < pageMovies.size(); ++i) {
             const auto& movie = pageMovies[i];
             crow::json::wvalue movie_json;
+            movie_json["id"] = movie.imdb_id;
             movie_json["title"] = movie.title;
             movie_json["tags"] = movie.tags;
             movie_json["synopsis"] = movie.plot_synopsis;
@@ -90,12 +96,12 @@ int main() {
                 if (!body) {
                     return crow::response(400, "Invalid JSON");
                 }
-                std::string title = body["title"].s();
-                auto results = db.searchByTitle(title);
-                if (results.empty()) {
+                std::string id = body["id_movie"].s();
+                auto movie = db.getMovieById(id);
+                if (movie.imdb_id.empty()) {
                     return crow::response(404, "Movie not found");
                 }
-                db.likeMovie(results[0]); // Assuming exact match
+                db.likeMovie(id); // Assuming exact match
                 return crow::response(200);
             });
 
@@ -105,13 +111,45 @@ int main() {
                 if (!body) {
                     return crow::response(400, "Invalid JSON");
                 }
-                std::string title = body["title"].s();
-                auto results = db.searchByTitle(title);
-                if (results.empty()) {
+                std::string id = body["id_movie"].s();
+                auto movie = db.getMovieById(id);
+                if (movie.imdb_id.empty()) {
                     return crow::response(404, "Movie not found");
                 }
-                db.addToWatchLater(results[0]); // Assuming exact match
+                db.addToWatchLater(id); // Assuming exact match
                 return crow::response(200);
+            });
+
+    CROW_ROUTE(app, "/recommended_by_tag")
+            .methods("GET"_method)([&db](){
+                auto movies = db.getRecommendedMovies_by_tag();
+                crow::json::wvalue x;
+                for (size_t i = 0; i < movies.size(); ++i) {
+                    const auto& movie = movies[i];
+                    crow::json::wvalue movie_json;
+                    movie_json["id"] = movie.imdb_id;
+                    movie_json["title"] = movie.title;
+                    movie_json["tags"] = movie.tags;
+                    movie_json["synopsis"] = movie.plot_synopsis;
+                    x["movies"][i] = std::move(movie_json);
+                }
+                return crow::response(x);
+            });
+
+    CROW_ROUTE(app,"/get_movies_liked")
+            .methods("GET"_method)([&db](){
+                auto movies = db.getLikedMovies();
+                crow::json::wvalue x;
+                for (size_t i = 0; i < movies.size(); ++i) {
+                    const auto& movie = movies[i];
+                    crow::json::wvalue movie_json;
+                    movie_json["id"] = movie.imdb_id;
+                    movie_json["title"] = movie.title;
+                    movie_json["tags"] = movie.tags;
+                    movie_json["synopsis"] = movie.plot_synopsis;
+                    x["movies"][i] = std::move(movie_json);
+                }
+                return crow::response(x);
             });
 
     app.port(18080).multithreaded().run(); // Ejecutar la aplicación en el puerto 18080
