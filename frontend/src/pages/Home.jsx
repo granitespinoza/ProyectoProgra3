@@ -11,6 +11,8 @@ const Home = () => {
     const [startIndexTag, setStartIndexTag] = useState(0);
     const [startIndexTitle, setStartIndexTitle] = useState(0);
     const [showFullSynopsis, setShowFullSynopsis] = useState({});
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [isTransitioningTitle, setIsTransitioningTitle] = useState(false);
 
     useEffect(() => {
         const fetchRecommendedMovies = async () => {
@@ -28,36 +30,52 @@ const Home = () => {
     }, []);
 
     const nextMoviesTag = () => {
-    if (startIndexTag >= recommendedMoviesTag.length - 2) {
-        setStartIndexTag(0); // Vuelve al principio si se llega al final
-    } else {
-        setStartIndexTag(prevIndex => prevIndex + 2);
+        setIsTransitioning(true);
+        setTimeout(() => {
+            if (startIndexTag >= recommendedMoviesTag.length - 2) {
+                setStartIndexTag(0); // Vuelve al principio si se llega al final
+            } else {
+                setStartIndexTag(prevIndex => prevIndex + 2);
+            }
+            setIsTransitioning(false);
+        }, 500);
     }
-}
 
-const beforeMoviesTag = () => {
-    if (startIndexTag === 0) {
-        setStartIndexTag(recommendedMoviesTag.length - 2); // Vuelve al final si se llega al principio
-    } else {
-        setStartIndexTag(prevIndex => prevIndex - 2);
+    const beforeMoviesTag = () => {
+        setIsTransitioning(true);
+        setTimeout(() => {
+            if (startIndexTag === 0) {
+                setStartIndexTag(recommendedMoviesTag.length - 2); // Vuelve al final si se llega al principio
+            } else {
+                setStartIndexTag(prevIndex => prevIndex - 2);
+            }
+            setIsTransitioning(false);
+        }, 500);
     }
-}
 
-const nextMoviesTitle = () => {
-    if (startIndexTitle >= recommendedMoviesTitle.length - 2) {
-        setStartIndexTitle(0); // Vuelve al principio si se llega al final
-    } else {
-        setStartIndexTitle(prevIndex => prevIndex + 2);
+    const nextMoviesTitle = () => {
+        setIsTransitioningTitle(true);
+        setTimeout(() => {
+            if (startIndexTitle >= recommendedMoviesTitle.length - 2) {
+                setStartIndexTitle(0); // Vuelve al principio si se llega al final
+            } else {
+                setStartIndexTitle(prevIndex => prevIndex + 2);
+            }
+            setIsTransitioningTitle(false);
+        }, 500);
     }
-}
 
-const beforeMoviesTitle = () => {
-    if (startIndexTitle === 0) {
-        setStartIndexTitle(recommendedMoviesTitle.length - 2); // Vuelve al final si se llega al principio
-    } else {
-        setStartIndexTitle(prevIndex => prevIndex - 2);
+    const beforeMoviesTitle = () => {
+        setIsTransitioningTitle(true);
+        setTimeout(() => {
+            if (startIndexTitle === 0) {
+                setStartIndexTitle(recommendedMoviesTitle.length - 2); // Vuelve al final si se llega al principio
+            } else {
+                setStartIndexTitle(prevIndex => prevIndex - 2);
+            }
+            setIsTransitioningTitle(false);
+        }, 500);
     }
-}
 
     const toggleSynopsis = (index) => {
         setShowFullSynopsis(prevState => ({...prevState, [index]: !prevState[index]}));
@@ -71,7 +89,8 @@ const beforeMoviesTitle = () => {
                 <FontAwesomeIcon icon={faArrowLeft} />
             </button>
             {recommendedMoviesTag.slice(startIndexTag, startIndexTag + 2).map((movie, index) => (
-                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4 mr-2 ml-2 w-11/12 justify-between ">
+                <div key={index}
+                     className={`movie-card border-2 border-gray-200 rounded-lg p-4 mb-4 mr-2 ml-2 w-11/12 justify-between transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
                     <h2>{movie.title}</h2>
                     <div className="flex flex-wrap mb-2">
                         {movie.tags.split(',').map((tag, i) => (
@@ -88,17 +107,18 @@ const beforeMoviesTitle = () => {
                 </div>
             ))}
             <button onClick={nextMoviesTag} className="h-20 mt-16">
-                <FontAwesomeIcon icon={faArrowRight} />
+                <FontAwesomeIcon icon={faArrowRight}/>
             </button>
         </div>
-<hr className="w-full my-4"/>
+        <hr className="w-full my-4"/>
         <h1 className="text-3xl mb-4">Recomendacion por titulo</h1>
         <div className="flex flex-row">
             <button onClick={beforeMoviesTitle} className="h-20 mt-16">
                 <FontAwesomeIcon icon={faArrowLeft} />
             </button>
             {recommendedMoviesTitle.slice(startIndexTitle, startIndexTitle + 2).map((movie, index) => (
-                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4 mr-2 ml-2 w-11/12 ">
+                <div key={index}
+                     className={`movie-card border-2 border-gray-200 rounded-lg p-4 mb-4 mr-2 ml-2 w-11/12 justify-between transition-opacity duration-500 ${isTransitioningTitle ? 'opacity-0' : 'opacity-100'}`}>
                     <h2>{movie.title}</h2>
                     <div className="flex flex-wrap mb-2">
                         {movie.tags.split(',').map((tag, i) => (
@@ -115,7 +135,7 @@ const beforeMoviesTitle = () => {
                 </div>
             ))}
             <button onClick={nextMoviesTitle} className="h-20 mt-16">
-                <FontAwesomeIcon icon={faArrowRight} />
+                <FontAwesomeIcon icon={faArrowRight}/>
             </button>
         </div>
 
