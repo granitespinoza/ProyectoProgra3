@@ -1,6 +1,7 @@
 #include "../include/utils.h"
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 std::string readCSVToString(const std::string& filename) {
     std::ifstream file(filename);
@@ -26,8 +27,6 @@ std::vector<std::string> splitString(const std::string& str, const std::string& 
     return tokens;
 }
 
-
-
 std::vector<std::vector<std::string>> groupData(const std::vector<std::string>& data, size_t groupSize) {
     std::vector<std::vector<std::string>> groupedData;
     for (size_t i = 0; i < data.size(); i += groupSize) {
@@ -43,15 +42,14 @@ std::vector<std::vector<std::string>> groupData(const std::vector<std::string>& 
 void removeQuotes(std::vector<std::vector<std::string>>& data) {
     for (size_t i = 0; i < data.size(); ++i) {
         for (size_t j = 0; j < data[i].size(); ++j) {
-
             if (i >= 1 && j == 0) {
                 data[i][j] = data[i][j].substr(2, data[i][j].length() - 3);
-                data[i][j].erase(std::remove(data[i][j].begin(), data[i][j].end(), '"'), data[i][j].end());
             } else if (j == data[i].size() - 1) {
                 data[i][j] = data[i][j].substr(1, data[i][j].length() - 1);
             } else {
                 data[i][j] = data[i][j].substr(1, data[i][j].length() - 2);
             }
+            data[i][j].erase(std::remove(data[i][j].begin(), data[i][j].end(), '"'), data[i][j].end());
             data[i][j].erase(std::remove(data[i][j].begin(), data[i][j].end(), '\\'), data[i][j].end());
         }
     }
