@@ -1,3 +1,0 @@
-C:/Users/elvis/OneDrive/Escritorio/UTEC CLASES/2024 - 1/Progra_3/ProyectoProgra3/cmake-build-debug/CMakeFiles/prueba_2_proyecto_p3.dir
-C:/Users/elvis/OneDrive/Escritorio/UTEC CLASES/2024 - 1/Progra_3/ProyectoProgra3/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/elvis/OneDrive/Escritorio/UTEC CLASES/2024 - 1/Progra_3/ProyectoProgra3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
