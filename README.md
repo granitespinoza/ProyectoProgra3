@@ -13,3 +13,6 @@ Nuestro proyecto ....
 ## Anexo
 
 - Link del video: 
+
+#Pendiente:
+
