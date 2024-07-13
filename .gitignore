@@ -1,0 +1,23 @@
+# Ignore build directories
+/build/
+/Build/
+/build-*/
+/cmake-build-debug/
+
+# Ignore CMake generated files
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+Makefile
+
+# Ignore any other temporary files created by CMake
+*.o
+*.obj
+*.tmp
+*.log
+*.cmake
+
+# Ignore executables and other binary files
+*.exe
+*.out
+*.app
