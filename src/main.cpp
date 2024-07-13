@@ -19,7 +19,9 @@ struct CORS {
 int main() {
     crow::App<CORS> app; // Crear una aplicación Crow con CORS habilitado
 
-    MovieDatabase db;
+
+    // Acceder a la instancia de MovieDatabase a través del método getInstance
+    auto& db = MovieDatabase::getInstance();
     db.loadFromCSV("../data/movies.csv");
 
     CROW_ROUTE(app, "/get_WatchLater")

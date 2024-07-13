@@ -16,27 +16,29 @@ void MovieDatabase::loadFromCSV(const std::string& filename) {
     removeQuotes(groupedData);
 
     for (int i = 0; i < groupedData.size(); ++i) {
-    const auto& group = groupedData[i];
-    if (group.size() == 6) {
-        Movie movie;
-        movie.imdb_id = group[0];
-        movie.title = group[1];
-        movie.plot_synopsis = group[2];
-        movie.tags = group[3];
-        movie.split = group[4];
-        movie.synopsis_source = group[5];
-        movies[movie.imdb_id] = movie;
-    } else {
-        std::cerr << "Línea " << i+1 << " con formato incorrecto: ";
-        for (const auto& element : group) {
-            std::cerr << element << " ";
+        const auto& group = groupedData[i];
+        if (group.size() == 6) {
+            //uso del patron de diseño builder
+            Movie movie = MovieBuilder().setImdbId(group[0])
+                                        .setTitle(group[1])
+                                        .setPlotSynopsis(group[2])
+                                        .setTags(group[3])
+                                        .setSplit(group[4])
+                                        .setSynopsisSource(group[5])
+                                        .build();
+            movies[movie.imdb_id] = movie;
+        } else {
+            std::cerr << "Linea " << i+1 << " con formato incorrecto: ";
+            for (const auto& element : group) {
+                std::cerr << element << " ";
+            }
+            std::cerr << std::endl;
         }
-        std::cerr << std::endl;
     }
+
+    std::cout << "Se cargaron " << movies.size() << " peliculas desde el archivo CSV." << std::endl;
 }
 
-    std::cout << "Se cargaron " << movies.size() << " películas desde el archivo CSV." << std::endl;
-}
 
 std::vector<Movie> MovieDatabase::getMoviesByPage(int page, int pageSize) {
     std::vector<Movie> pageMovies;
