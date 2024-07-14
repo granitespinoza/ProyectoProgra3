@@ -74,7 +74,7 @@ const Favoritos = () => {
                     </p>
                     <div className="flex mt-2">
                         <button onClick={() => handleRemove(movie.id)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
-                            Eliminar de Ver Despues
+                            Eliminar de Favoritos
                         </button>
                     </div>
                 </div>
