@@ -4,6 +4,7 @@ import animation_1 from "../animations/animation_1.json";
 import animation_2 from "../animations/animation_2.json";
 import animation_3 from "../animations/animation_3.json";
 import animation_4 from "../animations/animation_4.json";
+import animation_5 from "../animations/animation_5.json"; // Importa la nueva animación
 
 const defaultOptions = {
     loop: true,
@@ -41,6 +42,15 @@ const defaultOptions4 = {
     }
 }
 
+const defaultOptions5 = { // Define las opciones de la nueva animación
+    loop: true,
+    autoplay: true,
+    animationData: animation_5,
+    rendererSettings: {
+        preserveAspectRatio: "xMidYMid slice"
+    }
+}
+
 
 const NavBar = () => {
     return (
@@ -69,6 +79,12 @@ const NavBar = () => {
                         <Lottie options={defaultOptions3} height={46} width={46}/>
                     </div>
                         <Link to="/ver_despues" className="text-neutral-50 text-lg flex mt-3">Ver mas tarde</Link>
+                </li>
+                <li className="flex flex-row">
+                    <div className="flex mt-0">
+                        <Lottie options={defaultOptions5} height={46} width={46}/>
+                    </div>
+                    <Link to="/busqueda" className="text-neutral-50 text-lg flex mt-3">Busqueda</Link>
                 </li>
             </ul>
         </nav>
