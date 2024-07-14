@@ -48,11 +48,10 @@ std::vector<Movie> MovieDatabase::getMoviesByPage(int page, int pageSize) {
     size_t start = (page - 1) * pageSize;
     size_t end = std::min(movies.size(), start + pageSize);
 
-    // Copiar las películas de la página al vector pageMovies
-    auto it = movies.begin();
+    auto it = begin();
     std::advance(it, start);
     for (size_t i = start; i < end; ++i, ++it) {
-        pageMovies.push_back(it->second);
+        pageMovies.push_back(*it);
     }
 
     return pageMovies;

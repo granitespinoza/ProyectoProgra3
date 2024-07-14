@@ -1,7 +1,3 @@
-//
-// Created by Usuario on 20/06/2024.
-//
-
 #ifndef MYCPPRESTPROJECT_MOVIEDATABASE_H
 #define MYCPPRESTPROJECT_MOVIEDATABASE_H
 #include <string>
@@ -10,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include <iterator> // Necesario para std::iterator_traits
 
 struct Movie {
     std::string imdb_id;
@@ -22,12 +18,41 @@ struct Movie {
 };
 
 class MovieDatabase {
-private:
-    std::unordered_map<std::string, Movie> movies;
-    std::vector<Movie> watchLater;
-    std::vector<Movie> likedMovies;
-
 public:
+    class Iterator {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using difference_type = std::ptrdiff_t;
+        using value_type = Movie;
+        using pointer = Movie*;
+        using reference = Movie&;
+
+        Iterator(std::unordered_map<std::string, Movie>::iterator it) : it_(it) {}
+
+        Iterator& operator++() {
+            ++it_;
+            return *this;
+        }
+
+        bool operator!=(const Iterator& other) const {
+            return it_ != other.it_;
+        }
+
+        reference operator*() {
+            return it_->second;
+        }
+
+    private:
+        std::unordered_map<std::string, Movie>::iterator it_;
+    };
+
+    Iterator begin() {
+        return Iterator(movies.begin());
+    }
+
+    Iterator end() {
+        return Iterator(movies.end());
+    }
 
     void loadFromCSV(const std::string& filename);
     std::vector<Movie> getMoviesByPage(int page, int pageSize);
@@ -44,7 +69,11 @@ public:
     Movie getMovieById(const std::string& imdb_id);
     void removeWatchLater(const std::string& id);
     void removeLikedMovie(const std::string& id);
-};
 
+private:
+    std::unordered_map<std::string, Movie> movies;
+    std::vector<Movie> watchLater;
+    std::vector<Movie> likedMovies;
+};
 
 #endif //MYCPPRESTPROJECT_MOVIEDATABASE_H
