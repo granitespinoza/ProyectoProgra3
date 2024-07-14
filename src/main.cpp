@@ -41,18 +41,20 @@ int main() {
     });
 
     CROW_ROUTE(app, "/search")
-            .methods("POST"_method)([&db](const crow::request& req){
-                auto body = crow::json::load(req.body);
-                if (!body) {
-                    return crow::response(400, "Invalid JSON");
+            .methods("GET"_method)([&db](const crow::request& req){
+                auto query = req.url_params.get("query");
+                if (!query) {
+                    return crow::response(400, "Missing query parameter");
                 }
-                std::string query = body["query"].s();
-                auto results = db.searchByTitle(query);
+                std::string query_str = query;
+                auto results = db.searchByTitle(query_str);
                 crow::json::wvalue x;
                 for (size_t i = 0; i < results.size(); ++i) {
                     const auto& movie = results[i];
                     crow::json::wvalue movie_json;
+                    movie_json["id"] = movie.imdb_id;
                     movie_json["title"] = movie.title;
+                    movie_json["tags"] = movie.tags;
                     movie_json["synopsis"] = movie.plot_synopsis;
                     x["results"][i] = std::move(movie_json);
                 }

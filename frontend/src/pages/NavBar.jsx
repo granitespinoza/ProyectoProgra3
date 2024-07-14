@@ -84,7 +84,7 @@ const NavBar = () => {
                     <div className="flex mt-0">
                         <Lottie options={defaultOptions5} height={46} width={46}/>
                     </div>
-                    <Link to="/busquedatag" className="text-neutral-50 text-lg flex mt-3">Busqueda por Tag</Link>
+                    <Link to="/busqueda" className="text-neutral-50 text-lg flex mt-3">Busqueda</Link>
                 </li>
             </ul>
         </nav>
