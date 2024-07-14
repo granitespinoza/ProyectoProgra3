@@ -4,7 +4,7 @@ import animation_1 from "../animations/animation_1.json";
 import animation_2 from "../animations/animation_2.json";
 import animation_3 from "../animations/animation_3.json";
 import animation_4 from "../animations/animation_4.json";
-import animation_5 from "../animations/animation_4.json"; // Importa la nueva animación
+import animation_5 from "../animations/animation_5.json"; // Importa la nueva animación
 
 const defaultOptions = {
     loop: true,
