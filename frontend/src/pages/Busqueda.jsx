@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { get_movies_tag, get_movies_tittle } from '../api/api.js';
+import { get_movies_tag, get_movies_tittle, liked_movie, watch_later } from '../api/api.js';
 
 const BusquedaTag = () => {
     const [searchTag, setSearchTag] = useState('');
@@ -66,6 +66,24 @@ const BusquedaTag = () => {
 
     const toggleSynopsis = (index) => {
         setShowFullSynopsis(prevState => ({ ...prevState, [index]: !prevState[index] }));
+    };
+
+    const handleLike = async (movie) => {
+        try {
+            const response = await liked_movie(movie.id);
+            console.log(response); // Log the response for debugging
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleWatchLater = async (movie) => {
+        try {
+            const response = await watch_later(movie.id);
+            console.log(response); // Log the response for debugging
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const moviesPerPage = 20;
@@ -140,6 +158,14 @@ const BusquedaTag = () => {
                                             {showFullSynopsis[index] ? 'Ver menos' : 'Ver más'}
                                         </button>
                                     </p>
+                                    <div className="flex mt-2">
+                                        <button onClick={() => handleLike(movie)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2 mr-2">
+                                            Me gusta
+                                        </button>
+                                        <button onClick={() => handleWatchLater(movie)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
+                                            Ver más tarde
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
