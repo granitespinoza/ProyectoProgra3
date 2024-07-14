@@ -66,3 +66,13 @@ export const remove_liked_movie = async (id) => {
     });
     return res.data;
 }
+
+export const undo= async () => {
+    const res = await axios.post(`${BAKEND_URL}/undo`);
+    return res.data;
+}
+
+export const update_history = async () => {
+    const res = await axios.put(`${BAKEND_URL}/upd_history`);
+    return res.data;
+}

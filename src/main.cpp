@@ -19,7 +19,9 @@ struct CORS {
 int main() {
     crow::App<CORS> app; // Crear una aplicación Crow con CORS habilitado
 
-    MovieDatabase db;
+
+    // Acceder a la instancia de MovieDatabase a través del método getInstance
+    auto& db = MovieDatabase::getInstance();
     db.loadFromCSV("../data/movies.csv");
 
     CROW_ROUTE(app, "/get_WatchLater")
@@ -198,6 +200,24 @@ int main() {
                 db.removeLikedMovie(id); // Assuming exact match
                 return crow::response(200);
             });
+
+    CROW_ROUTE(app,"/undo")
+            .methods("POST"_method)([&db](const crow::request& req) {
+            if (!db.historyIsEmpty()) {
+                db.restoreStateFromMemento();
+                return crow::response(200, "La última acción ha sido revertida con éxito.");
+            } else {
+                return crow::response(400, "No hay acciones para revertir.");
+                }
+            });
+
+    CROW_ROUTE(app,"/upd_history")
+            .methods("PUT"_method)([&db](const crow::request& req) {
+                db.updateState();
+                return crow::response(200, "Historial actualizado con éxito.");
+            });
+
+
 
     app.port(18080).multithreaded().run(); // Ejecutar la aplicación en el puerto 18080
 }

@@ -16,28 +16,51 @@ void MovieDatabase::loadFromCSV(const std::string& filename) {
     removeQuotes(groupedData);
 
     for (int i = 0; i < groupedData.size(); ++i) {
-    const auto& group = groupedData[i];
-    if (group.size() == 6) {
-        Movie movie;
-        movie.imdb_id = group[0];
-        movie.title = group[1];
-        movie.plot_synopsis = group[2];
-        movie.tags = group[3];
-        movie.split = group[4];
-        movie.synopsis_source = group[5];
-        movies[movie.imdb_id] = movie;
-    } else {
-        std::cerr << "Línea " << i+1 << " con formato incorrecto: ";
-        for (const auto& element : group) {
-            std::cerr << element << " ";
+        const auto& group = groupedData[i];
+        if (group.size() == 6) {
+            //uso del patron de diseño builder
+            Movie movie = MovieBuilder().setImdbId(group[0])
+                                        .setTitle(group[1])
+                                        .setPlotSynopsis(group[2])
+                                        .setTags(group[3])
+                                        .setSplit(group[4])
+                                        .setSynopsisSource(group[5])
+                                        .build();
+            movies[movie.imdb_id] = movie;
+        } else {
+            std::cerr << "Linea " << i+1 << " con formato incorrecto: ";
+            for (const auto& element : group) {
+                std::cerr << element << " ";
+            }
+            std::cerr << std::endl;
         }
-        std::cerr << std::endl;
+    }
+
+    std::cout << "Se cargaron " << movies.size() << " peliculas desde el archivo CSV." << std::endl;
+}
+
+void MovieDatabase::saveStateToMemento() {
+    Memento memento(watchLater, likedMovies);
+    history.push(memento);
+}
+
+void MovieDatabase::restoreStateFromMemento() {
+    if (!history.empty()) {
+        Memento memento = history.top();
+        watchLater = memento.getWatchLater();
+        likedMovies = memento.getLikedMovies();
+        history.pop();
     }
 }
 
-    std::cout << "Se cargaron " << movies.size() << " películas desde el archivo CSV." << std::endl;
+void MovieDatabase::updateState() {
+    Memento memento(watchLater, likedMovies);
+    history.push(memento);
 }
 
+bool MovieDatabase::historyIsEmpty() {
+    return history.empty();
+}
 std::vector<Movie> MovieDatabase::getMoviesByPage(int page, int pageSize) {
     std::vector<Movie> pageMovies;
     if (page < 1 || pageSize < 1 || (page - 1) * pageSize >= movies.size()) {
@@ -104,7 +127,7 @@ std::vector<Movie> MovieDatabase::getRandomMovies() {
     return randomMovies;
 }
 
-std::string MovieDatabase::getRandomTag(std::string tags) {
+std::string MovieDatabase::getRandomTag(const std::string& tags) {
     std::vector<std::string> tagList = splitString(tags, ",");
     int randomIndex = rand() % tagList.size();
     return tagList[randomIndex];
@@ -174,6 +197,7 @@ void MovieDatabase::addToWatchLater(const std::string& id) {
     if (it == watchLater.end()) {
         watchLater.push_back(movies[id]);
     }
+    saveStateToMemento();
 }
 
 void MovieDatabase::likeMovie(const std::string& id) {
@@ -186,6 +210,7 @@ void MovieDatabase::likeMovie(const std::string& id) {
     if (it == likedMovies.end()) {
         likedMovies.push_back(movies[id]);
     }
+    saveStateToMemento();
 }
 
 Movie MovieDatabase::getMovieById(const std::string& imdb_id) {
@@ -245,6 +270,7 @@ std::vector<Movie> MovieDatabase::getRecommendedMovies_by_title() {
 }
 
 void MovieDatabase::removeWatchLater(const std::string &id) {
+    saveStateToMemento();
     watchLater.erase(std::remove_if(watchLater.begin(), watchLater.end(), [id](const Movie& movie) {
         return movie.imdb_id == id;
     }), watchLater.end());
@@ -252,6 +278,7 @@ void MovieDatabase::removeWatchLater(const std::string &id) {
 }
 
 void MovieDatabase::removeLikedMovie(const std::string &id) {
+    saveStateToMemento();
     likedMovies.erase(std::remove_if(likedMovies.begin(), likedMovies.end(), [id](const Movie& movie) {
         return movie.imdb_id == id;
     }), likedMovies.end());

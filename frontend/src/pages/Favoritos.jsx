@@ -1,46 +1,65 @@
-import { useState, useEffect } from "react";
-import { get_favorites } from "../api/api.js";
-import {remove_liked_movie} from "../api/api.js";
+import { useState, useEffect, useRef } from "react";
+import { get_favorites, remove_liked_movie, undo, update_history } from "../api/api.js";
 
 const Favoritos = () => {
-    const [favorites, setFavorites] = useState([]);
-    const [showFullSynopsis, setShowFullSynopsis] = useState({})
+    const [favoritos, setfavoritos] = useState([]);
+    const [showFullSynopsis, setShowFullSynopsis] = useState({});
+    const [showUndo, setShowUndo] = useState(false);
+    const undoTimeoutRef = useRef(null);
 
     useEffect(() => {
-        const fetchFavorites = async () => {
+        const fetchFavorite_movies = async () => {
             try {
                 const movies = await get_favorites();
-                setFavorites(movies);
-                console.log(movies);
+                setfavoritos(movies);
             } catch (error) {
                 console.error(error);
             }
-        }
+        };
 
-        fetchFavorites();
+        fetchFavorite_movies();
     }, []);
 
     const toggleSynopsis = (index) => {
         setShowFullSynopsis(prevState => ({...prevState, [index]: !prevState[index]}));
-    }
+    };
 
-    const handleRemove = async (movie) => {
-    try {
-        const response = await remove_liked_movie(movie.id);
-        console.log(response); // Log the response for debugging
-        // Remove the movie from the state
-        setFavorites(favorites.filter(m => m.id !== movie.id));
-    } catch (error) {
-        console.error(error);
-    }
+    const handleRemove = async (movieId) => {
+        try {
+            await remove_liked_movie(movieId);
+            setfavoritos(favoritos.filter(m => m.id !== movieId));
+            setShowUndo(true);
 
-}
+            undoTimeoutRef.current = setTimeout(async () => {
+                setShowUndo(false);
+                await update_history();
+                undoTimeoutRef.current = null;
+            }, 5000);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleUndo = async () => {
+        try {
+            if (undoTimeoutRef.current) {
+                clearTimeout(undoTimeoutRef.current);
+                undoTimeoutRef.current = null;
+            }
+            await undo();
+            const movies = await get_favorites();
+            setfavoritos(movies);
+            setShowUndo(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <div className="flex flex-col items-start mt-16 ml-2">
             <h1 className="text-3xl mb-4">Favoritos</h1>
-            {favorites.map((movie, index) => (
-                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4  w-11/12 ">
+            {favoritos.map((movie, index) => (
+                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4 w-11/12">
                     <h2 className="text-2xl mb-2">{movie.title}</h2>
                     <div className="flex flex-wrap mb-2">
                         {movie.tags.split(',').map((tag, i) => (
@@ -54,14 +73,22 @@ const Favoritos = () => {
                         </button>
                     </p>
                     <div className="flex mt-2">
-                        <button onClick={() => handleRemove(movie)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
-                            Eliminar de favoritos
+                        <button onClick={() => handleRemove(movie.id)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
+                            Eliminar de Ver Despues
                         </button>
                     </div>
                 </div>
             ))}
+            {showUndo && (
+                <div className="fixed bottom-0 left-0 right-0 bg-gray-100 p-4 text-center shadow-lg">
+                    <button onClick={handleUndo} className="text-blue-500">Deshacer</button>
+                </div>
+            )}
         </div>
-    )
+    );
 }
 
 export default Favoritos;
+
+
+
