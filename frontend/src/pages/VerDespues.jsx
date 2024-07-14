@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
-import { get_watch_later } from "../api/api.js";
-import { remove_watch_later} from "../api/api.js";
+import { useState, useEffect, useRef } from "react";
+import { get_watch_later, remove_watch_later, undo, update_history } from "../api/api.js";
 
 const VerDespues = () => {
     const [watchLaterMovies, setWatchLaterMovies] = useState([]);
     const [showFullSynopsis, setShowFullSynopsis] = useState({});
-
-
+    const [showUndo, setShowUndo] = useState(false);
+    const undoTimeoutRef = useRef(null);
 
     useEffect(() => {
         const fetchWatchLaterMovies = async () => {
@@ -16,32 +15,51 @@ const VerDespues = () => {
             } catch (error) {
                 console.error(error);
             }
-        }
+        };
 
         fetchWatchLaterMovies();
     }, []);
 
     const toggleSynopsis = (index) => {
         setShowFullSynopsis(prevState => ({...prevState, [index]: !prevState[index]}));
-    }
-    const handleRemove = async (movie) => {
-    try {
-        const response = await remove_watch_later(movie.id);
-        console.log(response); // Log the response for debugging
-        // Remove the movie from the state
-        setWatchLaterMovies(watchLaterMovies.filter(m => m.id !== movie.id));
-    } catch (error) {
-        console.error(error);
-    }
-}
+    };
 
+    const handleRemove = async (movieId) => {
+        try {
+            await remove_watch_later(movieId);
+            setWatchLaterMovies(watchLaterMovies.filter(m => m.id !== movieId));
+            setShowUndo(true);
 
+            undoTimeoutRef.current = setTimeout(async () => {
+                setShowUndo(false);
+                await update_history();
+                undoTimeoutRef.current = null;
+            }, 5000);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleUndo = async () => {
+        try {
+            if (undoTimeoutRef.current) {
+                clearTimeout(undoTimeoutRef.current);
+                undoTimeoutRef.current = null;
+            }
+            await undo();
+            const movies = await get_watch_later();
+            setWatchLaterMovies(movies);
+            setShowUndo(false);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <div className="flex flex-col items-start mt-16 ml-2">
             <h1 className="text-3xl mb-4">Ver Despues</h1>
             {watchLaterMovies.map((movie, index) => (
-                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4  w-11/12 ">
+                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4 w-11/12">
                     <h2 className="text-2xl mb-2">{movie.title}</h2>
                     <div className="flex flex-wrap mb-2">
                         {movie.tags.split(',').map((tag, i) => (
@@ -55,14 +73,19 @@ const VerDespues = () => {
                         </button>
                     </p>
                     <div className="flex mt-2">
-                        <button onClick={() => handleRemove(movie)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
+                        <button onClick={() => handleRemove(movie.id)} className="border-2 border-blue-500 text-blue-500 rounded px-4 py-2">
                             Eliminar de Ver Despues
                         </button>
                     </div>
                 </div>
             ))}
+            {showUndo && (
+                <div className="fixed bottom-0 left-0 right-0 bg-gray-100 p-4 text-center shadow-lg">
+                    <button onClick={handleUndo} className="text-blue-500">Deshacer</button>
+                </div>
+            )}
         </div>
-    )
+    );
 }
 
 export default VerDespues;

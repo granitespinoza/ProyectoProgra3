@@ -39,7 +39,28 @@ void MovieDatabase::loadFromCSV(const std::string& filename) {
     std::cout << "Se cargaron " << movies.size() << " peliculas desde el archivo CSV." << std::endl;
 }
 
+void MovieDatabase::saveStateToMemento() {
+    Memento memento(watchLater, likedMovies);
+    history.push(memento);
+}
 
+void MovieDatabase::restoreStateFromMemento() {
+    if (!history.empty()) {
+        Memento memento = history.top();
+        watchLater = memento.getWatchLater();
+        likedMovies = memento.getLikedMovies();
+        history.pop();
+    }
+}
+
+void MovieDatabase::updateState() {
+    Memento memento(watchLater, likedMovies);
+    history.push(memento);
+}
+
+bool MovieDatabase::historyIsEmpty() {
+    return history.empty();
+}
 std::vector<Movie> MovieDatabase::getMoviesByPage(int page, int pageSize) {
     std::vector<Movie> pageMovies;
     if (page < 1 || pageSize < 1 || (page - 1) * pageSize >= movies.size()) {
@@ -107,7 +128,7 @@ std::vector<Movie> MovieDatabase::getRandomMovies() {
     return randomMovies;
 }
 
-std::string MovieDatabase::getRandomTag(std::string tags) {
+std::string MovieDatabase::getRandomTag(const std::string& tags) {
     std::vector<std::string> tagList = splitString(tags, ",");
     int randomIndex = rand() % tagList.size();
     return tagList[randomIndex];
@@ -177,6 +198,7 @@ void MovieDatabase::addToWatchLater(const std::string& id) {
     if (it == watchLater.end()) {
         watchLater.push_back(movies[id]);
     }
+    saveStateToMemento();
 }
 
 void MovieDatabase::likeMovie(const std::string& id) {
@@ -189,6 +211,7 @@ void MovieDatabase::likeMovie(const std::string& id) {
     if (it == likedMovies.end()) {
         likedMovies.push_back(movies[id]);
     }
+    saveStateToMemento();
 }
 
 Movie MovieDatabase::getMovieById(const std::string& imdb_id) {
@@ -248,6 +271,7 @@ std::vector<Movie> MovieDatabase::getRecommendedMovies_by_title() {
 }
 
 void MovieDatabase::removeWatchLater(const std::string &id) {
+    saveStateToMemento();
     watchLater.erase(std::remove_if(watchLater.begin(), watchLater.end(), [id](const Movie& movie) {
         return movie.imdb_id == id;
     }), watchLater.end());
@@ -255,6 +279,7 @@ void MovieDatabase::removeWatchLater(const std::string &id) {
 }
 
 void MovieDatabase::removeLikedMovie(const std::string &id) {
+    saveStateToMemento();
     likedMovies.erase(std::remove_if(likedMovies.begin(), likedMovies.end(), [id](const Movie& movie) {
         return movie.imdb_id == id;
     }), likedMovies.end());

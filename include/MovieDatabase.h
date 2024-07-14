@@ -5,11 +5,14 @@
 #ifndef MYCPPRESTPROJECT_MOVIEDATABASE_H
 #define MYCPPRESTPROJECT_MOVIEDATABASE_H
 #include <string>
+#include <utility>
 #include <vector>
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <stack>
+
 
 
 struct Movie {
@@ -19,6 +22,22 @@ struct Movie {
     std::string tags;
     std::string split;
     std::string synopsis_source;
+};
+
+//implementar Patron Memento
+
+class Memento {
+private:
+    std::vector<Movie> watchLater;
+    std::vector<Movie> likedMovies;
+public:
+    Memento(std::vector<Movie> watchLater, std::vector<Movie> likedMovies) : watchLater(std::move(watchLater)), likedMovies(std::move(likedMovies)) {}
+    std::vector<Movie> getWatchLater() {
+        return watchLater;
+    }
+    std::vector<Movie> getLikedMovies() {
+        return likedMovies;
+    }
 };
 
 // Definición de la clase MovieBuilder
@@ -73,6 +92,9 @@ private:
     std::vector<Movie> watchLater;
     std::vector<Movie> likedMovies;
 
+    // Memento
+    std::stack<Memento> history;
+
     // Constructor privado
     MovieDatabase() {}
 
@@ -85,6 +107,11 @@ public:
         static MovieDatabase instance;
         return instance;
     }
+
+    bool historyIsEmpty();
+    void saveStateToMemento();
+    void updateState();
+    void restoreStateFromMemento();
     void loadFromCSV(const std::string& filename);
     std::vector<Movie> getMoviesByPage(int page, int pageSize);
     std::vector<Movie> searchByTitle(const std::string& query);
@@ -95,7 +122,7 @@ public:
     void addToWatchLater(const std::string& id);
     void likeMovie(const std::string& id);
     std::vector<Movie> getRandomMovies();
-    std::string getRandomTag(std::string tags);
+    static std::string getRandomTag(const std::string& tags);
     std::vector<Movie> getLikedMovies();
     Movie getMovieById(const std::string& imdb_id);
     void removeWatchLater(const std::string& id);
